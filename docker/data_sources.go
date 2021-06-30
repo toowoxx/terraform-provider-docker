@@ -63,6 +63,11 @@ func dataSourceDockerImageWait() *schema.Resource {
 				Computed:    true,
 				Type:        schema.TypeBool,
 			},
+			"full_image": {
+				Description: "Returns the full image reference including registry, repository and tag",
+				Computed:    true,
+				Type:        schema.TypeString,
+			},
 		},
 	}
 }
@@ -106,6 +111,10 @@ func dataSourceDockerImageWaitRead(
 	d.SetId(fmt.Sprintf("%d", time.Now().Unix()))
 	if err := d.Set("exists", true); err != nil {
 		return diag.FromErr(errors.Wrap(err, "bug: could not set 'exists' output"))
+	}
+
+	if err := d.Set("full_image", fmt.Sprintf("%s/%s:%s", url, repository, tag)); err != nil {
+		return diag.FromErr(errors.Wrap(err, "bug: could not set 'full_image' output"))
 	}
 
 	return nil
