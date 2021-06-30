@@ -92,3 +92,4 @@ logs/
 *.DS_Store
 *thumbs.db
 
+bin/
