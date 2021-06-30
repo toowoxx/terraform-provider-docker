@@ -19,6 +19,6 @@ release:
 	zip -r9 ${BINARY}_${VERSION}_openbsd_amd64.zip ${BINARY}_v${VERSION}_openbsd_amd64 && \
 	zip -r9 ${BINARY}_${VERSION}_windows_amd64.zip ${BINARY}_v${VERSION}_windows_amd64 && \
 	: && \
-	sha256sum *.zip > ${BINARY}_${VERSION}_SHA256SUMS && \
+	sha256sum ${BINARY}_${VERSION}_*.zip > ${BINARY}_${VERSION}_SHA256SUMS && \
 	gpg --detach-sign ${BINARY}_${VERSION}_SHA256SUMS
 
