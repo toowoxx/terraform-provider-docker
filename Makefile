@@ -1,6 +1,6 @@
 NAME:=docker
 BINARY=terraform-provider-${NAME}
-VERSION=0.0.7
+VERSION=0.0.8
 OS_ARCH=linux_amd64
 
 .PHONY: default
