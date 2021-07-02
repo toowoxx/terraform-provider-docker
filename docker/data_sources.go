@@ -53,6 +53,13 @@ func dataSourceDockerImageWait() *schema.Resource {
 				Default:     600,
 				ForceNew:    true,
 			},
+			"fail_after_timeout": {
+				Description: "Whether to return an error if waiting times out",
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     true,
+				ForceNew:    true,
+			},
 			"id": {
 				Description: "Returns an ID that changes every time",
 				Computed:    true,
@@ -77,7 +84,8 @@ func dataSourceDockerImageWaitRead(
 	d *schema.ResourceData,
 	m interface{},
 ) diag.Diagnostics {
-	url := "https://" + d.Get("registry").(string)
+	registry := d.Get("registry").(string)
+	url := "https://" + registry
 	username := ""
 	password := ""
 	if strI, ok := d.GetOk("username"); ok {
@@ -104,8 +112,12 @@ func dataSourceDockerImageWaitRead(
 		return diag.Errorf("invalid image \"%s\": found more than one colon", image)
 	}
 
-	if err := waitForImage(url, username, password, repository, tag, d.Get("timeout").(int)); err != nil {
-		return diag.FromErr(err)
+	if timedOut, err := waitForImage(url, username, password, repository, tag, d.Get("timeout").(int)); err != nil {
+		if !timedOut || timedOut && d.Get("fail_after_timeout").(bool) {
+			return diag.FromErr(err)
+		}
+		_ = d.Set("exists", false)
+		return nil
 	}
 
 	d.SetId(fmt.Sprintf("%d", time.Now().Unix()))
@@ -113,17 +125,19 @@ func dataSourceDockerImageWaitRead(
 		return diag.FromErr(errors.Wrap(err, "bug: could not set 'exists' output"))
 	}
 
-	if err := d.Set("full_image", fmt.Sprintf("%s/%s:%s", url, repository, tag)); err != nil {
+	if err := d.Set("full_image", fmt.Sprintf("%s/%s:%s", registry, repository, tag)); err != nil {
 		return diag.FromErr(errors.Wrap(err, "bug: could not set 'full_image' output"))
 	}
 
 	return nil
 }
 
-func waitForImage(url string, username string, password string, repository string, tag string, timeout int) error {
+func waitForImage(
+	url string, username string, password string, repository string, tag string, timeout int,
+) (bool, error) {
 	hub, err := registry.New(url, username, password)
 	if err != nil {
-		return errors.Wrap(err, "could not connect/log in to registry")
+		return false, errors.Wrap(err, "could not connect/log in to registry")
 	}
 
 	ranIntoTimeout := false
@@ -140,14 +154,15 @@ func waitForImage(url string, username string, password string, repository strin
 				log.Println(err)
 			}
 			if ranIntoTimeout {
-				break
+				return true, fmt.Errorf(
+					"ran into timeout, tried to access image %d times but couldn't find it", timesTried)
 			}
-			time.Sleep(time.Duration(1000 + timesTried * 10) * time.Millisecond)
+			time.Sleep(time.Duration(1000+timesTried*10) * time.Millisecond)
 			timesTried++
 			continue
 		}
 		break
 	}
 
-	return nil
+	return false, nil
 }
