@@ -127,6 +127,7 @@ func waitForImage(url string, username string, password string, repository strin
 	}
 
 	ranIntoTimeout := false
+	timesTried := 0
 
 	time.AfterFunc(time.Duration(timeout)*time.Second, func() {
 		ranIntoTimeout = true
@@ -141,7 +142,8 @@ func waitForImage(url string, username string, password string, repository strin
 			if ranIntoTimeout {
 				break
 			}
-			time.Sleep(500 * time.Millisecond)
+			time.Sleep(time.Duration(1000 + timesTried * 10) * time.Millisecond)
+			timesTried++
 			continue
 		}
 		break
