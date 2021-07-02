@@ -11,5 +11,6 @@ func Provider() *schema.Provider {
 		DataSourcesMap: map[string]*schema.Resource{
 			"docker_image_wait": dataSourceDockerImageWait(),
 		},
+		Schema: map[string]*schema.Schema{},
 	}
 }
