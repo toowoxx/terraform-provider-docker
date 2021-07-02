@@ -1,6 +1,6 @@
 NAME:=docker
 BINARY=terraform-provider-${NAME}
-VERSION=0.0.6
+VERSION=0.0.7
 OS_ARCH=linux_amd64
 
 .PHONY: default
@@ -12,7 +12,7 @@ build:
 
 .PHONY: release
 release:
-	cd bin && \
+	cd bin/${VERSION}/ && \
 	zip -r9 ${BINARY}_${VERSION}_darwin_amd64.zip ${BINARY}_v${VERSION}_darwin_amd64 && \
 	zip -r9 ${BINARY}_${VERSION}_linux_amd64.zip ${BINARY}_v${VERSION}_linux_amd64 && \
 	zip -r9 ${BINARY}_${VERSION}_openbsd_amd64.zip ${BINARY}_v${VERSION}_openbsd_amd64 && \
@@ -22,7 +22,8 @@ release:
 
 .PHONY: build-release
 build-release:
-	GOOS=darwin GOARCH=amd64 go build -o ./bin/${BINARY}_v${VERSION}_darwin_amd64
-	GOOS=linux GOARCH=amd64 go build -o ./bin/${BINARY}_v${VERSION}_linux_amd64
-	GOOS=openbsd GOARCH=amd64 go build -o ./bin/${BINARY}_v${VERSION}_openbsd_amd64
-	GOOS=windows GOARCH=amd64 go build -o ./bin/${BINARY}_v${VERSION}_windows_amd64
+	mkdir -p bin/${VERSION}
+	GOOS=darwin GOARCH=amd64 go build -o ./bin/${VERSION}/${BINARY}_v${VERSION}_darwin_amd64
+	GOOS=linux GOARCH=amd64 go build -o ./bin/${VERSION}/${BINARY}_v${VERSION}_linux_amd64
+	GOOS=openbsd GOARCH=amd64 go build -o ./bin/${VERSION}/${BINARY}_v${VERSION}_openbsd_amd64
+	GOOS=windows GOARCH=amd64 go build -o ./bin/${VERSION}/${BINARY}_v${VERSION}_windows_amd64
