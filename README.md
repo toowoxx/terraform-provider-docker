@@ -1,7 +1,4 @@
-# Terraform Docker Provider (ALPHA)
-
-Note: This provider is under development and may or may not work
-for the particular purpose you want to use it for.
+# Terraform Docker Provider
 
 ## License
 
